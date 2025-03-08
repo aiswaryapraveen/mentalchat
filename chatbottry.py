@@ -81,6 +81,13 @@ responses = {
     "Penguins mate for life and often propose to their mates with a pebble. The male penguin will give a pebble to the female as a symbol of his love and commitment!",
     "Hedgehogs are known for their adorable 'hogs'! They curl up into a tight ball when scared, protecting their delicate underbellies with their spiky outer shells."
    ],
+   "stories":["The Gift of a Lifetime: A young girl who had always wanted a puppy finally receives one on her birthday. She names him 'Hope' because of the joy he brought into her life. Through tough times, the bond between them strengthens, showing how love and companionship can heal.",
+              "The Kindness of Strangers: After losing her job and struggling to make ends meet, a single mother was anonymously gifted enough groceries to feed her family for months. Later, she learned it was her former co-workers who had quietly rallied to help.","A Letter from Dad: A soldier stationed overseas writes heartfelt letters to his young daughter, telling her stories of how much he misses her and how proud he is of her. When he returns home, she has an album of all the letters ready, filled with love and memories.","The Rescued Dog: A dog was abandoned at a shelter, fearful and traumatized. After months of care and patience, the dog found a new home with a family that loved him unconditionally. Years later, he became the family’s loyal protector, always by their side.",
+              "The Last-Minute Donation: A man who was struggling with financial difficulties noticed a woman outside a store holding a sign for help. He gave her all the cash in his wallet, only to later discover that she was the one who had been trying to raise funds for a local charity he supported.",
+              "The Surprise Reunion: After years of being separated, two childhood friends reconnected on social media. One had been adopted by a new family after her parents’ passing. The reunion was emotional and heartwarming, and they picked up right where they left off, realizing how much they meant to each other.",
+              "The Gift of Learning: A retired teacher volunteered to tutor a struggling student for free, despite having no formal teaching position. With her help, the student went from failing to passing with flying colors and was able to fulfill his dream of going to college.",
+              "The Power of a Smile: A man having the worst day of his life entered a coffee shop and was greeted by a barista with a genuine smile. That small act of kindness completely turned his day around and gave him the courage to face his challenges with a renewed spirit.",
+              "The Birthday Surprise: A young boy whose family couldn't afford birthday presents received a surprise package from an anonymous donor. Inside were toys, clothes, and a heartfelt birthday card. The family was deeply touched by the generosity of a stranger.","The Heartfelt Apology: A man who had distanced himself from his best friend years ago due to a misunderstanding sent an apology letter. To his surprise, his friend responded with forgiveness and shared how much he had missed their friendship. They rekindled their bond, proving it’s never too late to make amends."]
 }
 
 # Keyword categories
@@ -99,8 +106,9 @@ keywords = {
     "cheer_up": ["cheer me up", "make me happy", "lift my mood"],
     "postive_compliments":["you are great","you're so good", "you're cute", "i love you","aww","you're the best","so sweet","you made my day"],
     "refusal":["i don't want to", "i do not want to"],
-    "facts" : ["facts", "random facts"],
-    "animals": ["animal facts","about animals"]
+    "facts" : ["facts", "random facts", "fact"],
+    "animals": ["animal facts","about animals"],
+    "story":["story","tell me a story","i would like a story"],
 }
 
 def categorize_input(user_input):
@@ -159,7 +167,9 @@ def generate_response(user_input):
         if category == "greeting":
             category = "neutral"  # Don't greet when the conversation is emotional
     if 'cheer_up' in last_messages and "yes" in user_input.lower():
-        return random.choice(responses["cheer_up"])  # Keep the cheer-up response going
+        return random.choice(responses["cheer_up"])
+    if 'story' in last_messages and "yes" in user_input.lower():
+        return random.choice(responses["stories"])
     if 'fact' in last_messages and "yes" in user_input.lower():
         return random.choice(responses["facts"])  # Keep the cheer-up response going
     if 'motivation' in last_messages and "yes" in user_input.lower():
