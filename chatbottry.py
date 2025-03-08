@@ -51,7 +51,36 @@ responses = {
     "refusal_replies":["I understand. It's okay to take your time. 💙",
             "That's perfectly fine. I'm here whenever you're ready. 💙",
             "No pressure, take all the time you need. 💙"
-            ]
+            ],
+    "facts": ["Did you know that October 10th is World Mental Health Day? It's a day to raise awareness about mental health and promote positive mental well-being.","Studies show that laughter can reduce stress and improve your mood by releasing endorphins (the brain's 'feel-good' chemicals).",
+              "Did you know that October 10th is World Mental Health Day? It's a day to raise awareness about mental health and promote positive mental well-being.",
+                "Studies show that laughter can reduce stress and improve your mood by releasing endorphins (the brain's 'feel-good' chemicals).",
+                "The color blue is often associated with calmness and relaxation. Some studies suggest that looking at the color blue can help reduce anxiety and promote a sense of peace.",
+                "Did you know that regular physical activity doesn’t just improve your body? It also enhances your brain’s performance and can help reduce symptoms of depression and anxiety.",
+                "Keeping a journal or writing down your thoughts and feelings can help you process emotions and reduce stress. This is why journaling is often recommended as a mental health exercise.",
+                "Through a process called neuroplasticity, your brain has the ability to rewire itself, adapting to new situations and learning from experiences.",
+                "Listening to music can have a positive effect on mental health by boosting your mood, reducing stress, and improving cognitive function. It's like a workout for your brain!",
+                "The way you speak to yourself affects your emotional well-being. Positive self-talk can help reduce stress and improve confidence, while negative self-talk can contribute to feelings of anxiety.",
+                "Sleep is crucial for your emotional well-being. It helps regulate mood, improve cognitive function, and reduce stress. So, getting 7-9 hours of quality sleep every night is key!",
+                "Practicing gratitude has been shown to increase feelings of happiness and improve mental health. Taking a moment every day to appreciate the little things in life can make a big difference.",
+                "Did you know that even if you're feeling down, smiling can trick your brain into thinking you're happy? This is known as the facial feedback hypothesis.",
+                "Spending time with friends and family can improve mental health by reducing feelings of loneliness and increasing feelings of happiness and security.",
+                "Mindfulness meditation can help lower anxiety, reduce stress, and improve focus. It's like a mini vacation for your brain!",
+                "Spending time outdoors and connecting with nature has been shown to improve mood and reduce feelings of stress and anxiety. A walk in the park can make a big difference!",
+                "Did you know that your brain physically reacts to your emotions? When you're stressed, your heart rate and blood pressure rise, and when you're calm, your body relaxes.","Believe it or not, laughing can burn up to 40 calories per hour! So the next time you're feeling down, put on a funny movie and laugh your stress away."
+    ],
+    "animalfacts" : [
+    "Did you know that sea otters hold hands when they sleep to keep from drifting apart? It's called 'rafting,' and it helps them stay connected!",
+    "A group of flamingos is called a 'flamboyance.' The name is fitting, considering their bright pink feathers and elegant poses!",
+    "Kangaroos can’t walk backward! They are built for hopping and moving forward, making them excellent at jumping over obstacles.",
+    "Elephants are known to have incredible memories. They can remember friends and places for many years, and they often show compassion and empathy towards each other.",
+    "Quokkas, known as the 'happiest animals on Earth,' always seem to be smiling! They are small, herbivorous marsupials from Australia.",
+    "Crows are highly intelligent and can even use tools. Some have been observed using sticks to fish for food, and they can even recognize human faces!",
+    "A baby panda is born the size of a stick of butter! They grow rapidly over the first few months of life, gaining weight much faster than human babies.",
+    "Sloths only defecate once a week! They do it at the base of a tree and often spend hours climbing down to do so.",
+    "Penguins mate for life and often propose to their mates with a pebble. The male penguin will give a pebble to the female as a symbol of his love and commitment!",
+    "Hedgehogs are known for their adorable 'hogs'! They curl up into a tight ball when scared, protecting their delicate underbellies with their spiky outer shells."
+   ],
 }
 
 # Keyword categories
@@ -69,7 +98,9 @@ keywords = {
     "affirmation": ["daily affirmation", "affirmation", "positive thoughts", "motivate me"],
     "cheer_up": ["cheer me up", "make me happy", "lift my mood"],
     "postive_compliments":["you are great","you're so good", "you're cute", "i love you","aww","you're the best","so sweet","you made my day"],
-    "refusal":["i don't want to", "i do not want to"]
+    "refusal":["i don't want to", "i do not want to"],
+    "facts" : ["facts", "random facts"],
+    "animals": ["animal facts","about animals"]
 }
 
 def categorize_input(user_input):
@@ -129,18 +160,21 @@ def generate_response(user_input):
             category = "neutral"  # Don't greet when the conversation is emotional
     if 'cheer_up' in last_messages and "yes" in user_input.lower():
         return random.choice(responses["cheer_up"])  # Keep the cheer-up response going
-
+    if 'fact' in last_messages and "yes" in user_input.lower():
+        return random.choice(responses["facts"])  # Keep the cheer-up response going
     if 'motivation' in last_messages and "yes" in user_input.lower():
         return random.choice(responses["motivation"])  # Continue motivation if requested earlier
-
+    if 'animal fact' in last_messages and "yes" in user_input.lower():
+        return random.choice(responses["animalfacts"])
     if 'joke' in last_messages and "yes" in user_input.lower():
         return random.choice(responses["jokes"])  # Respond with a joke if they previously requested one
     if 'breathing' in last_messages and "yes" in user_input.lower():
         return "Great! Let’s do another round. Breathe in... 1...2...3...4... Hold...1...2...3...4... Now slowly exhale...1...2...3...4... How are you feeling now?"
+    if 'talk about' in last_messages and "yes" in user_input.lower():
+        return "what is it?"
     # Default behavior for 'yes' being a general affirmative response
     if "yes" in user_input.lower():
         return "Got it! Anything else you'd like to talk about?"
-    
     # Handle responses for specific phrases indicating doubt or frustration
     if "i don’t think so" in user_input.lower() or "i can't" in user_input.lower() or "i'm not sure" in user_input.lower():
         return random.choice([
