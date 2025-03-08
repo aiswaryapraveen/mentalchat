@@ -1,0 +1,28 @@
+# Python bytecode files
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment folders
+.venv/
+env/
+
+# Streamlit config
+.streamlit/config.toml
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Model files (if not using Hugging Face hosted models)
+*.pt
+*.bin
+
+# Environment variables (if using .env for local environment configuration)
+.env
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
