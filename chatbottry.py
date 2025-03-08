@@ -5,12 +5,12 @@ import torch.nn.functional as F
 import random
 import contractions
 
-# Load the sentiment analysis model
+
 model_name = "nlptown/bert-base-multilingual-uncased-sentiment"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
-# Response categories
+
 responses = {
     "greeting": ["Hey there! 😊 How are you feeling today?", "Hi! Hope you're doing well. 💙", "Hello! What’s on your mind?"],
     "motivation": ["You’ve got this! Stay strong and keep going! 💪🚀", "Stay focused, break your tasks into small steps, and take it one step at a time! 📚", "Every step you take brings you closer to success. Keep pushing! 🔥"],
@@ -90,7 +90,7 @@ responses = {
               "The Birthday Surprise: A young boy whose family couldn't afford birthday presents received a surprise package from an anonymous donor. Inside were toys, clothes, and a heartfelt birthday card. The family was deeply touched by the generosity of a stranger.","The Heartfelt Apology: A man who had distanced himself from his best friend years ago due to a misunderstanding sent an apology letter. To his surprise, his friend responded with forgiveness and shared how much he had missed their friendship. They rekindled their bond, proving it’s never too late to make amends."]
 }
 
-# Keyword categories
+
 keywords = {
     "breathing_exercises": ["breathing exercise","breathe", "deep breath", "help me breathe", "calm down", "breathing"],
     "greeting": ["hi","hai","hellaur", "hello", "hey", "good morning", "good afternoon", "good evening"],
@@ -116,7 +116,9 @@ def categorize_input(user_input):
     joke_reactions = ["haha", "lol", "lmao", "that's funny", "so funny", "😂", "🤣"]
     if any(word in user_input_lower for word in joke_reactions):
         return "joke_reaction"
-    
+    animals = ["animal facts","about animals", "animal fact"]
+    if any(word in user_input_lower for word in animals):
+        return "animalfacts"
     for category, words in keywords.items():
         if any(word in user_input_lower for word in words):
             return category
@@ -137,20 +139,40 @@ def analyze_sentiment(user_input):
         return "motivation"
 
 def preprocess_input(user_input):
-    # Expand contractions like "you're" to "you are"
     expanded_input = contractions.fix(user_input)
     return expanded_input
 
 
 def generate_response(user_input):
+    if "story" in user_input.lower():
+        # Provide a story from the predefined list
+        story_response = random.choice(responses["stories"])
+        st.session_state.last_story_given = True  # Track that a story was given
+        return story_response
+    
+    if "animal facts" in user_input.lower():
+        # Provide an animal fact
+        animal_fact_response = random.choice(responses["animalfacts"])
+        st.session_state.last_animal_fact_given = True  # Track that an animal fact was given
+        return animal_fact_response
+    
+    if 'last_story_given' in st.session_state and st.session_state.last_story_given:
+        # If a story was provided recently, avoid giving a motivational message unless prompted
+        if "motivate" in user_input.lower() or "cheer up" in user_input.lower():
+            return random.choice(responses["motivation"])
+        if user_input.strip() == "":
+            return "Alright! Let me know if you need anything. 💙"
+    
+    if 'last_animal_fact_given' in st.session_state and st.session_state.last_animal_fact_given:
+        if user_input.strip() == "":
+            return "Alright! Let me know if you need anything. 💙"
+        
     category = categorize_input(user_input)
     if category == "positive_compliments":
         return random.choice(responses["positive_compliments"])
-    
     if category == "default":
         category = analyze_sentiment(user_input)
     
-    # If the conversation is neutral or not emotionally charged, avoid repeating greetings
     if category == "neutral":
         return random.choice([
             "Got it! 😊 Let me know if you want to chat about anything.",
@@ -158,34 +180,36 @@ def generate_response(user_input):
             "Okay, feel free to share whenever you're ready. 💙"
         ])
     
-    # Handle emotional responses if needed
     last_messages = [msg["text"] for msg in st.session_state.chat_history[-3:]] if "chat_history" in st.session_state else []
     emotional_categories = ["venting", "stress", "motivation", "cheer_up", "self_care", "affirmation"]
 
-    # Avoid switching to a greeting if emotional conversation is ongoing
     if any(categorize_input(msg) in emotional_categories for msg in last_messages):
         if category == "greeting":
-            category = "neutral"  # Don't greet when the conversation is emotional
+            category = "neutral"
     if 'cheer_up' in last_messages and "yes" in user_input.lower():
         return random.choice(responses["cheer_up"])
     if 'story' in last_messages and "yes" in user_input.lower():
         return random.choice(responses["stories"])
     if 'fact' in last_messages and "yes" in user_input.lower():
-        return random.choice(responses["facts"])  # Keep the cheer-up response going
+        return random.choice(responses["facts"])
     if 'motivation' in last_messages and "yes" in user_input.lower():
-        return random.choice(responses["motivation"])  # Continue motivation if requested earlier
+        return random.choice(responses["motivation"]) 
     if 'animal fact' in last_messages and "yes" in user_input.lower():
         return random.choice(responses["animalfacts"])
     if 'joke' in last_messages and "yes" in user_input.lower():
-        return random.choice(responses["jokes"])  # Respond with a joke if they previously requested one
+        return random.choice(responses["jokes"])
     if 'breathing' in last_messages and "yes" in user_input.lower():
         return "Great! Let’s do another round. Breathe in... 1...2...3...4... Hold...1...2...3...4... Now slowly exhale...1...2...3...4... How are you feeling now?"
+    if 'story' in last_messages and "yes" in user_input.lower():
+        return random.choice(responses["stories"])
     if 'talk about' in last_messages and "yes" in user_input.lower():
         return "what is it?"
-    # Default behavior for 'yes' being a general affirmative response
+    if "story" in user_input.lower():
+        return random.choice(responses["stories"])
+    if "animal facts" in user_input.lower():
+        return random.choice(responses["animalfacts"])
     if "yes" in user_input.lower():
         return "Got it! Anything else you'd like to talk about?"
-    # Handle responses for specific phrases indicating doubt or frustration
     if "i don’t think so" in user_input.lower() or "i can't" in user_input.lower() or "i'm not sure" in user_input.lower():
         return random.choice([
             "It’s okay to feel unsure sometimes. Remember, it's one step at a time. 💙",
@@ -195,22 +219,18 @@ def generate_response(user_input):
     if category == "positive_compliments":
         return random.choice(responses["positive_compliments"])
 
-    # If the input contains a joke reaction, handle it separately
     if category == "joke_reaction":
         return random.choice(["Haha, that's funny!", "Glad you liked that!", "I know, right?"])
 
-    # Default response generation based on category
     return random.choice(responses.get(category, responses["neutral"]))
 
 
-# Initialize session state
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
 st.title("💬 Chat with Me!")
 st.write("I'm here to listen and support you. Click a prompt below or type your message.")
 
-# Suggested prompts as buttons
 suggested_prompts = [
     "I'm feeling stressed", 
     "I need motivation", 
@@ -230,14 +250,14 @@ for i, prompt in enumerate(suggested_prompts):
         bot_response = generate_response(prompt)
         st.session_state.chat_history.append({"role": "assistant", "text": bot_response})
 
-# Chat input
+
 user_input = st.chat_input("Type your message:", key="user_input")
 if user_input:
     st.session_state.chat_history.append({"role": "user", "text": user_input})
     bot_response = generate_response(user_input)
     st.session_state.chat_history.append({"role": "assistant", "text": bot_response})
 
-# Display chat history
+
 for message in st.session_state.chat_history:
     with st.chat_message(message["role"]):
         st.write(message["text"])
