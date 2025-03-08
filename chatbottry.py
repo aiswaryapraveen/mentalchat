@@ -86,7 +86,7 @@ responses = {
 # Keyword categories
 keywords = {
     "breathing_exercises": ["breathing exercise","breathe", "deep breath", "help me breathe", "calm down", "breathing"],
-    "greeting": ["hi", "hello", "hey", "good morning", "good afternoon", "good evening"],
+    "greeting": ["hi","hai","hellaur", "hello", "hey", "good morning", "good afternoon", "good evening"],
     "motivation": ["motivate", "study", "focus", "inspire", "encourage"],
     "venting": ["i feel", "sad", "lonely", "depressed", "anxious", "lost", "vent"],
     "stress": ["stressed", "overwhelmed", "pressure", "tired", "burnt out"],
