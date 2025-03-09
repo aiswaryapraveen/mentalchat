@@ -128,22 +128,48 @@ responses = {
         "The Surprise Reunion: After years of being separated, two childhood friends reconnected on social media. One had been adopted by a new family after her parents’ passing. The reunion was emotional and heartwarming, and they picked up right where they left off, realizing how much they meant to each other.",
         "The Gift of Learning: A retired teacher volunteered to tutor a struggling student for free, despite having no formal teaching position. With her help, the student went from failing to passing with flying colors and was able to fulfill his dream of going to college.",
         "The Power of a Smile: A man having the worst day of his life entered a coffee shop and was greeted by a barista with a genuine smile. That small act of kindness completely turned his day around and gave him the courage to face his challenges with a renewed spirit.",
-        "The Birthday Surprise: A young boy whose family couldn't afford birthday presents received a surprise package from an anonymous donor. Inside were toys, clothes, and a heartfelt birthday card. The family was deeply touched by the generosity of a stranger.","The Heartfelt Apology: A man who had distanced himself from his best friend years ago due to a misunderstanding sent an apology letter. To his surprise, his friend responded with forgiveness and shared how much he had missed their friendship. They rekindled their bond, proving it’s never too late to make amends."],
+        "The Birthday Surprise: A young boy whose family couldn't afford birthday presents received a surprise package from an anonymous donor. Inside were toys, clothes, and a heartfelt birthday card. The family was deeply touched by the generosity of a stranger.","The Heartfelt Apology: A man who had distanced himself from his best friend years ago due to a misunderstanding sent an apology letter. To his surprise, his friend responded with forgiveness and shared how much he had missed their friendship. They rekindled their bond, proving it’s never too late to make amends."
+        ],
     "thinking": [
         "That sounds interesting! What have you been thinking about?",
-        "I’d love to hear more about that!"
+        "I’d love to hear more about that!",
+        "It’s good to take a moment and reflect. What’s on your mind?",
+        "Take your time—thoughts can be powerful.",
+        "Sometimes just thinking things through can help bring clarity.",
         ],
+    "positive_feedback" : [
+        "I'm glad you liked it! 😊 Want to hear more jokes, facts, or stories?",
+        "That's awesome! 😄 Would you like to hear another joke, fact, or maybe a story?",
+        "I love that you're enjoying this! Do you want to hear more? 😊"
+    ],
+    "goodbye" : [
+        "Goodbye! Take care! 💙",
+        "See you soon! Don't hesitate to come back! 😊",
+        "Take care! I'll be here if you need me. 💙",
+    ],
+    "support" : [
+        "I'm here for you! What do you need help with?",
+        "Let’s figure this out together. What’s on your mind?",
+        "I’m all ears! Tell me how I can assist."   
+    ],
+    "small_talk" :[
+        "Just here to chat with you! 😊 What about you?",
+        "Not much, just waiting to have a nice conversation. What's on your mind?",
+        "I'm here to listen! What’s up?",
+    ],
+
     }
 
 
 keywords = {
     "breathing_exercises": ["breathing exercise","breathe", "deep breath", "help me breathe", "calm down", "breathing"],
-    "greeting": ["hi","hai","hellaur", "hello", "hey", "good morning", "good afternoon", "good evening"],
+    "greeting": ["bro","hi","hai","hellaur", "hello", "hey", "good morning", "good afternoon", "good evening"],
+    "goodbye":[ "bye", "goodbye" ,"see you later" ,"take care", "see ya"],
     "motivation": ["motivate", "study", "focus", "inspire", "encourage"],
     "venting": ["i feel", "sad", "lonely", "depressed", "anxious", "lost", "vent"],
     "stress": ["stressed", "overwhelmed", "pressure", "tired", "burnt out"],
     "gratitude": ["thank you", "thanks", "grateful", "appreciate"],
-    "casual": ["how are you", "what’s up", "what are you doing", "talk to me"],
+    "casual": ["how are you", "what is up","how are you doing","how do you do"],
     "joke": ["joke", "make me laugh", "funny"],
     "self_care": ["self-care", "self care", "well-being", "relax", "mental health", "take care"],
     "neutral": ["okay", "ok", "fine", "alright"],
@@ -154,6 +180,10 @@ keywords = {
     "facts" : ["facts", "random facts", "fact"],
     "animals": ["animal facts","about animals"],
     "story":["story","tell me a story","i would like a story"],
+    "positive_feedback":["that is so good","cool","oh damn","that is cool","that is good", "that is great","awesome", "i love that", "so good", "amazing", "awesome", "so cool", "so cute", "cute"],
+    "support" : ["help", "support", "need advice", "how can I help" ,"stuck"],
+    "thinking": ["thinking", "pondering","deep thought","reflecting"],
+    "small_talk":["what are you doing", "how is your day", "what is up"]
 }
 overwhelmed_responses = [
     "Life can feel like a lot sometimes, and that's okay. You're doing your best, and that's enough. Take a deep breath and give yourself grace. 💙",
@@ -173,6 +203,18 @@ follow_up_responses = [
 
 def categorize_input(user_input):
     user_input_lower = user_input.lower()
+
+    priority_categories = ["venting", "stress", "thinking", "support"]
+    
+    # Check priority categories first
+    for cat in priority_categories:
+        if any(word in user_input for word in keywords[cat]):
+            return cat
+    words = user_input.lower().split()  # Split into words
+    
+    for cat, word_list in keywords.items():
+        if any(word in words for word in word_list):  # Match exact words
+            return cat
 
     refusal_words = ["nothing", "no", "i don’t", "i do not", "i dont", "not really", "not now"]
     if any(word in user_input_lower for word in refusal_words):
@@ -218,24 +260,61 @@ def preprocess_input(user_input):
     expanded_input = contractions.fix(user_input)
     return expanded_input
 
-
 def generate_response(user_input):
     user_input = preprocess_input(user_input)
     category = categorize_input(user_input)
+    print(f"Category identified: {category}")
     if category == "default":
         category = analyze_sentiment(user_input)
+
+    last_messages = [msg["text"] for msg in st.session_state.chat_history[-3:]] if "chat_history" in st.session_state else []
+    last_messages_categories = [categorize_input(msg) for msg in last_messages]
+    print(last_messages)
+    print(last_messages_categories)
+    if category == "positive_feedback":
+        response = random.choice(responses["positive_feedback"])
+        if any(phrase in response.lower() for phrase in ["joke","fact","animal fact", "story"]):
+            st.session_state.follow_up ="positive_feedback"
+        return response
     
+    if category == "cheer_up":
+        response = random.choice(responses["cheer_up"])
+        
+        # If the response includes a follow-up question, track it
+        if any(phrase in response.lower() for phrase in ["joke", "fact", "animal fact", "stories"]):
+            st.session_state.follow_up = "cheer_up" 
+        
+        return response
+    if "yes" in user_input.lower():
+        if st.session_state.get("follow_up") == "positive_feedback":
+            st.session_state.follow_up = "joke_fact_story"  # Reset flag after responding
+            return random.choice(responses[random.choice(["joke", "facts", "animalfacts", "stories"])])
+        
+        if st.session_state.get("follow_up") == "joke_fact_story":
+            return random.choice(responses[random.choice(["joke","facts","animalfacts","stories"])])
+        
+        if st.session_state.get("follow_up") == "cheer_up":
+            st.session_state.follow_up = None  # Reset flag after responding
+            return random.choice(responses[random.choice(["joke", "facts", "animalfacts", "stories"])])
+        if "story" in last_messages_categories:
+            return random.choice(responses["stories"])
+        if "facts" in last_messages_categories:
+            return random.choice(responses["facts"])
+        if "motivation" in last_messages_categories:
+            return random.choice(responses["motivation"])
+        if "animalfacts" in last_messages_categories:
+            return random.choice(responses["animalfacts"])
+        if "jokes" in last_messages_categories:
+            return random.choice(responses["jokes"])
+        if "breathing" in last_messages_categories:
+            return "Great! Let’s do another round. Breathe in... 1...2...3...4... Hold...1...2...3...4... Now slowly exhale...1...2...3...4... How are you feeling now?"
+        return "Got it! Anything else you'd like to talk about?"
+    
+     # Direct story and fact responses
     if "story" in user_input.lower():
-        # Provide a story from the predefined list
-        story_response = random.choice(responses["stories"])
-        st.session_state.last_story_given = True  # Track that a story was given
-        return story_response
-    
+        return random.choice(responses["stories"])
     if "animal facts" in user_input.lower():
-        # Provide an animal fact
-        animal_fact_response = random.choice(responses["animalfacts"])
-        st.session_state.last_animal_fact_given = True  # Track that an animal fact was given
-        return animal_fact_response
+        return random.choice(responses["animalfacts"])
     
     if 'last_story_given' in st.session_state and st.session_state.last_story_given:
         # If a story was provided recently, avoid giving a motivational message unless prompted
@@ -247,57 +326,28 @@ def generate_response(user_input):
     if 'last_animal_fact_given' in st.session_state and st.session_state.last_animal_fact_given:
         if user_input.strip() == "":
             return "Alright! Let me know if you need anything. 💙"
-        
-    if category == "positive_compliments":
-        return random.choice(responses["positive_compliments"])
     
     if category == "stress" or category == "venting":
         return random.choice(responses[category])  # Ensure stress gets appropriate responses
     
-    if category == "neutral":
+    if category == "neutral":   
         return random.choice([
             "Got it! 😊 Let me know if you want to chat about anything.",
             "Alright! I'm here if you need anything. 💙",
             "Okay, feel free to share whenever you're ready. 💙"
         ])
     last_messages = [msg["text"] for msg in st.session_state.chat_history[-3:]] if "chat_history" in st.session_state else []
-    emotional_categories = ["venting", "stress", "motivation", "cheer_up", "self_care", "affirmation"]
+    emotional_categories = ["venting", "stress", "thinking","motivation", "cheer_up", "self_care", "affirmation"]
 
     if any(categorize_input(msg) in emotional_categories for msg in last_messages):
         if category == "greeting":
             category = "neutral"
-    if 'cheer_up' in last_messages and "yes" in user_input.lower():
-        return random.choice(responses["cheer_up"])
-    if 'story' in last_messages and "yes" in user_input.lower():
-        return random.choice(responses["stories"])
-    if 'fact' in last_messages and "yes" in user_input.lower():
-        return random.choice(responses["facts"])
-    if 'motivation' in last_messages and "yes" in user_input.lower():
-        return random.choice(responses["motivation"]) 
-    if 'animal fact' in last_messages and "yes" in user_input.lower():
-        return random.choice(responses["animalfacts"])
-    if 'joke' in last_messages and "yes" in user_input.lower():
-        return random.choice(responses["jokes"])
-    if 'breathing' in last_messages and "yes" in user_input.lower():
-        return "Great! Let’s do another round. Breathe in... 1...2...3...4... Hold...1...2...3...4... Now slowly exhale...1...2...3...4... How are you feeling now?"
-    if 'story' in last_messages and "yes" in user_input.lower():
-        return random.choice(responses["stories"])
-    if 'talk about' in last_messages and "yes" in user_input.lower():
-        return "what is it?"
-    if "story" in user_input.lower():
-        return random.choice(responses["stories"])
-    if "animal facts" in user_input.lower():
-        return random.choice(responses["animalfacts"])
-    if "yes" in user_input.lower():
-        return "Got it! Anything else you'd like to talk about?"
     if "i don’t think so" in user_input.lower() or "i can't" in user_input.lower() or "i'm not sure" in user_input.lower():
         return random.choice([
             "It’s okay to feel unsure sometimes. Remember, it's one step at a time. 💙",
             "I understand that it can be tough. You’ve handled tough moments before. I’m here with you. 💙",
             "Take it slow, you don't have to have everything figured out right now. I’m here for you. 💙"
         ])
-    if "thinking" in user_input.lower():
-        return random.choice(responses["thinking"])
     
     if category == "joke_reaction":
         return random.choice(["Haha, that's funny!", "Glad you liked that!", "I know, right?"])
