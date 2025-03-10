@@ -8,9 +8,6 @@ __pycache__/
 env/
 venv/
 
-# Streamlit config
-.streamlit/config.toml
-
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
